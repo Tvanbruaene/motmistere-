@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css.css">
+  
+  
+  <title>Document</title>
+</head>
+
+<body> 
+    <section>
+  <h1>Trouvez le mot mystère</h1>
+
+<div class="box">
+
+    
+  <div class="alert" id="alert"></div>
+  <p class="try_show" id="try_show"></p>
+  <form id="form" action="#">
+    <input class="prompt" id="prompt" type="text" />
+    <input class="send" id="send" type="submit" />
+    <input class="send hidden" id="restart" value="Recommencer" type="submit" />
+  </form>
+</div>
+
+<ul class="try_list" id="try_list">
+  <li class="start">Vos essais &gt;</li>
+</ul>
+</section> 
+<script>
+
+
+var randWord = ["BECODE", "EMPATHIE", "UTILISATEUR", "GRILLE", "COLONNE", "BALISE", "VALIDE", "ALIGNEMENT", "TABLEAU", "STYLE", "CODE", "CHIFFRE", "ACCOLADE", "FONCTION", "VARIABLE", "CONDITION", "BOUCLE", "DESIGN", "ORDINATEUR", "VIRGULE", "PARAGRAPHE", "PORTABLE", "TITRE", "TYPE", "CLASSE", "SCRIPT", "LIBRAIRIE", "TABLEAU", "TERMINAL", "BRANCHE", "SYMBOLE", "INTERFACE", "CLAVIER", "SOURIS", "INTERNET", "EQUIPE", "DIALOGUE", "ENTRAIDE"];
+console.log("> "+randWord.length+" mots disponibles.");
+
+var uiInput = document.getElementById("prompt");
+var uiTry = document.getElementById("try_show");
+var uiRestart = document.getElementById("restart");
+var uiAlert = document.getElementById("alert");
+var uiSend = document.getElementById("send");
+var uiList = document.getElementById("try_list");
+
+var targetArray = []; 
+var foundArray = []; 
+var targetWord; 
+var targetReveal;
+var alertMsg; 
+var targetLength = 0; 
+var winCount = 0; 
+var tryNumb = 0;
+var failNumb = 5; 
+var leftTry = targetLength*2 - failNumb; 
+var alreadyTested = [];
+var playerInput;
+function gameOver() {
+    console.log("> gameOver()");
+    var lostMsg = "Vous avez perdu... le pendu est PENDU !!! tin tiin~<br/>Le mot était <strong>"+targetWord+"</strong>";
+    uiAlert.innerHTML = lostMsg;
+    uiRestart.classList.remove("hidden");
+    uiInput.classList.add("hidden"); 
+    uiSend.classList.add("hidden");
+}
+
+function gameWin() {
+    console.log("> gameWin()");
+    var winMsg = "<strong>Félicitations !! </strong><br/>Vous avez réussi en "+tryNumb+" essai(s). Le mot était donc "+targetWord+" et vous vous êtes trompé "+failNumb+" fois.";
+    uiRestart.classList.remove("hidden");
+    uiInput.classList.add("hidden");
+    uiSend.classList.add("hidden");
+    uiAlert.innerHTML = winMsg;
+}
+
+function addInList(arg) {
+    console.log("> addInList(arg)");
+    var newLi= document.createElement("li");
+    newLi.innerHTML = arg;
+    uiList.appendChild(newLi);
+}
+
+function reset() {
+    console.log("> reset()");
+   
+    targetArray = [];
+    foundArray = [];
+    targetWord;
+    targetReveal;
+    targetLength = 0;
+    targetLength = 0;
+    winCount = 0;
+    tryNumb = 0;
+    failNumb = 0;
+    leftTry = targetLength*2 - failNumb; 
+    alreadyTested = [];
+    uiRestart.classList.add("hidden");
+    uiInput.classList.remove("hidden");
+    uiSend.classList.remove("hidden");
+    uiAlert.innerHTML = "";
+    uiList.innerHTML = "<li class=\"start\">Vos essais &gt;</li>";
+    initialize();
+}
+
+function strToArray(argStr) {
+    if (argStr != undefined) { 
+        console.log("> strToArray(argStr)");
+        argStr = argStr.toUpperCase();
+        targetArray = argStr.split("");
+        if (targetArray.indexOf(" ") != -1) {
+            alert("Pas d'espaces !");
+            reset();
+        }
+        else if (targetArray.length < 3) { 
+            alert("3 caractères minimum");
+            reset();
+        }
+        else {
+            for (let i in targetArray) { 
+                foundArray.splice(i,1,"_"); 
+            }
+        }
+    } else {console.log("> strToArray()");}
+    targetWord = targetArray.join(""); 
+    targetReveal = foundArray.join(" "); 
+    targetLength = targetArray.length; 
+    leftTry = targetLength*2 - failNumb;
+    uiTry.innerHTML = targetReveal;
+    console.log(foundArray);
+}
+
+function initialize() {
+    console.log("> initialize()");
+    var randOne = Math.floor(Math.random()*randWord.length);
+    console.log("Random is : "+randOne);
+    var selectSoluce = randWord[randOne];
+    strToArray(selectSoluce); 
+    uiInput.setAttribute( "autocomplete", "off" );
+    uiInput.focus();
+}
+
+function guessLetter() {
+    console.log("> guessLetter()");
+    playerInput = uiInput.value;
+    uiInput.value = ""; 
+    uiInput.focus();
+    playerInput = playerInput.toUpperCase();
+    uiAlert.innerHTML = "";
+    strToArray(); 
+    console.log("< you typed \""+playerInput+"\"");
+  
+    if (playerInput == targetWord) {
+        tryNumb++; 
+        targetReveal = targetArray.join(" "); 
+        uiTry.innerHTML = targetReveal;
+        uiAlert.innerHTML = alertMsg;
+        console.log("GUESS RIGHT !!!");
+        gameWin(); 
+    }
+    else if (playerInput == " ")  { 
+        alertMsg = "<strong>Pas d'espaces</strong>, recommencez"; 
+        uiAlert.innerHTML = alertMsg;
+        console.log(alertMsg);
+    }
+    else if (playerInput.length == 0) { 
+        alertMsg = "<strong>Mauvaise saisie</strong>, recommencez"; 
+        uiAlert.innerHTML = alertMsg; 
+        console.log(alertMsg);
+    }
+    else if (playerInput.length > 3) {
+        tryNumb++;
+        failNumb++;
+        leftTry = targetLength*2 - failNumb;
+        addInList(playerInput); 
+        alertMsg = "Vous faites <strong>erreur</strong> ! <strong>"+leftTry+"</strong> essais restants"; 
+        uiAlert.innerHTML = alertMsg;
+        console.log(alertMsg);
+    }
+    else if (alreadyTested.indexOf(playerInput) != -1) { 
+        tryNumb++;
+        failNumb++; 
+        leftTry = targetLength*2 - failNumb; 
+        alertMsg = "<strong>Déjà essayé</strong>, <strong>"+leftTry+"</strong> essais restants";
+        uiAlert.innerHTML = alertMsg;
+        console.log(alertMsg);
+    }
+    else { 
+        alreadyTested.push(playerInput);
+        addInList(playerInput); 
+        tryNumb++; 
+        if (targetArray.indexOf(playerInput) == -1 ) { 
+            failNumb++; 
+            leftTry = targetLength*2 - failNumb; 
+            alertMsg = "<strong>Nope</strong>, plus que <strong>"+leftTry+"</strong> erreurs possibles";
+            uiAlert.innerHTML = alertMsg;
+            console.log(alertMsg);
+        } 
+        else {
+            console.log("passed"); 
+            for (i=0;i<targetLength;i++) {  
+                if (playerInput == targetArray[i]) 
+                {
+                    console.log("> catch "+playerInput+" at "+i);
+
+                    foundArray.splice(i,1,playerInput);
+                    winCount++; 
+                    console.log("win: "+winCount);
+                    targetReveal = foundArray.join(" "); 
+                    uiTry.innerHTML = targetReveal; 
+                    console.log(">>"+foundArray[i]+" est ajouté à foundArray à l'index "+i+" ("+winCount+" lettres ont été trouvées)");
+                }
+            } 
+            if (winCount == targetLength) { 
+                gameWin(); 
+            } 
+        } 
+    } 
+} 
+uiInput.onkeyup = function() {
+    console.log("<< uiInput.onkeyup");
+    playerInput = uiInput.value;
+    if (playerInput.length>1) {
+        uiInput.classList.add("promptLarge");
+    } else {
+        uiInput.classList.remove("promptLarge");
+    }
+}
+uiSend.onclick = function(event){
+    console.log("<< uiSend.onclick");
+    event.preventDefault(); 
+    if (leftTry == 0) {
+        gameOver();
+    } else {
+        guessLetter();
+    }
+};
+
+uiRestart.onclick = function(event){
+    console.log("<< uiRestart.onclick");
+    event.preventDefault();
+    reset();
+};
+
+
+initialize();
+
+</script>
+
+
+</body>
+</html>
+
+
